@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusicChat - Chat Room</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1db954 0%, #191414 50%, #1ed760 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.9);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1db954;
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .sidebar-nav {
+            padding: 20px;
+            flex: 1;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 15px;
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            background: rgba(29, 185, 84, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+            color: #ffffff;
+        }
+        
+        .nav-item i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+            width: 20px;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        
+        .header {
+            padding: 20px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1db954;
+            margin-right: 20px;
+        }
+        
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .header-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .header-btn:hover {
+            background: rgba(29, 185, 84, 0.2);
+            border-color: #1db954;
+            transform: translateY(-2px);
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: calc(100vh - 140px);
+        }
+        
+        .messages {
+            flex: 1;
+            padding: 20px 30px;
+            overflow-y: auto;
+            background: transparent;
+            scroll-behavior: smooth;
+        }
+        
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        
+        .messages::-webkit-scrollbar-thumb {
+            background: #1db954;
+            border-radius: 3px;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            animation: messageSlide 0.3s ease-out;
+        }
+        
+        .message.own {
+            flex-direction: row-reverse;
+        }
+        
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message.own .message-content {
+            align-items: flex-end;
+        }
+        
+        .message.other .message-content {
+            align-items: flex-start;
+        }
+        
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            position: relative;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            min-width: fit-content;
+            align-items: flex-start;
+        }
+        
+        .message.own .message-bubble {
+            background: linear-gradient(135deg, #00C853 0%, #1ed760 100%);
+            color: #ffffff;
+            border-bottom-right-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 200, 83, 0.3);
+            margin-left: auto;
+            max-width: 70%;
+            min-width: 80px;
+            align-items: flex-end;
+        }
+        
+        .message.other .message-bubble {
+            background: rgba(51, 51, 51, 0.9);
+            color: #ffffff;
+            border-bottom-left-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-right: auto;
+            max-width: 70%;
+            min-width: 80px;
+            align-items: flex-start;
+        }
+        
+        .message-header {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            opacity: 0.7;
+            color: #1db954;
+        }
+        
+        .message.own .message-header {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .message-text {
+            font-size: 1rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        
+        /* Music Share Card Styles */
+        .music-share-card {
+            background: rgba(29, 185, 84, 0.1);
+            border: 1px solid rgba(29, 185, 84, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 0;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .music-share-card:hover {
+            background: rgba(29, 185, 84, 0.15);
+            border-color: rgba(29, 185, 84, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(29, 185, 84, 0.2);
+        }
+        
+        .track-share-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .track-share-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .track-share-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1db954;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .track-share-artist {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .track-play-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1db954, #1ed760);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .track-play-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(29, 185, 84, 0.4);
+        }
+        
+        .track-play-button.playing {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        }
+        
+        .playlist-share-card {
+            cursor: pointer;
+        }
+        
+        .playlist-share-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .playlist-share-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .playlist-share-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1db954;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .playlist-share-description {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .playlist-expand-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(29, 185, 84, 0.2);
+            border: 1px solid rgba(29, 185, 84, 0.3);
+            color: #1db954;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .playlist-expand-button:hover {
+            background: rgba(29, 185, 84, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .playlist-expand-button.expanded {
+            transform: rotate(180deg);
+        }
+        
+        .playlist-tracks {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .playlist-tracks.expanded {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .playlist-track-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin: 5px 0;
+            gap: 10px;
+        }
+        
+        .playlist-track-number {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: rgba(29, 185, 84, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1db954;
+            flex-shrink: 0;
+        }
+        
+        .playlist-track-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .playlist-track-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .playlist-track-artist {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .playlist-track-play {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(29, 185, 84, 0.2);
+            border: 1px solid rgba(29, 185, 84, 0.3);
+            color: #1db954;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .playlist-track-play:hover {
+            background: rgba(29, 185, 84, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 6px;
+            align-self: flex-end;
+            white-space: nowrap;
+        }
+        
+        .message.own .message-time {
+            align-self: flex-end;
+        }
+        
+        .message.other .message-time {
+            align-self: flex-start;
+        }
+        
+        .input-form {
+            padding: 20px 30px;
+            background: rgba(0, 0, 0, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+        }
+        
+        .form-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #1db954;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(29, 185, 84, 0.3);
+        }
+        
+        .form-group textarea {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            font-size: 1em;
+            resize: vertical;
+            min-height: 50px;
+            max-height: 120px;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1db954;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(29, 185, 84, 0.3);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(29, 185, 84, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(29, 185, 84, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .form-actions .btn {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1db954 0%, #191414 50%, #1ed760 100%);
+            margin: auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.3s ease;
+        }
+        
+        .modal-header {
+            padding: 25px 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .share-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .share-option {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .share-option:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .share-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1db954, #1ed760);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .share-icon i {
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .share-info h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+        
+        .share-info p {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+        
+        /* Track Sharing Styles */
+        .track-share-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .track-share-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .track-share-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .track-share-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .track-share-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .track-share-artist {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .track-share-action {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1db954, #1ed760);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 15px;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .track-share-item:hover .track-share-action {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(29, 185, 84, 0.4);
+        }
+        
+        .track-share-action i {
+            color: white;
+            font-size: 1rem;
+        }
+        
+        /* Playlist Sharing Styles */
+        .playlist-share-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .playlist-share-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .playlist-share-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .playlist-share-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .playlist-share-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .playlist-share-description {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .playlist-share-stats {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .playlist-share-action {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1db954, #1ed760);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 15px;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .playlist-share-item:hover .playlist-share-action {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(29, 185, 84, 0.4);
+        }
+        
+        .playlist-share-action i {
+            color: white;
+            font-size: 1rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .alert-success {
+            background: rgba(29, 185, 84, 0.2);
+            color: #1db954;
+            border-color: #1db954;
+        }
+        
+        .alert-error {
+            background: rgba(255, 59, 48, 0.2);
+            color: #ff3b30;
+            border-color: #ff3b30;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 60px 20px;
+        }
+        
+        .empty-state h3 {
+            margin: 0 0 15px 0;
+            font-weight: 300;
+            font-size: 1.5rem;
+        }
+        
+        .empty-state p {
+            margin: 0;
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+        
+        .mobile-nav {
+            display: none;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .mobile-nav-toggle {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                height: 100vh;
+                border-radius: 0;
+                margin: 0;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -300px;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            .mobile-nav {
+                display: block;
+            }
+            
+            .main-content {
+                width: 100%;
+            }
+            
+            .header {
+                padding: 15px 20px;
+            }
+            
+            .header-title {
+                font-size: 1.5rem;
+            }
+            
+            .messages {
+                padding: 15px 20px;
+            }
+            
+            .input-form {
+                padding: 15px 20px;
+            }
+            
+            .form-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .form-actions .btn {
+                width: 100%;
+                min-width: auto;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">🎵 MusicChat</h2>
+                <p class="sidebar-subtitle">Discover music together</p>
+            </div>
+            
+            <div class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    Home
+                </a>
+                <a href="/chat" class="nav-item active">
+                    <i class="fas fa-comments"></i>
+                    Chat Room
+                </a>
+                <a href="/audio" class="nav-item">
+                    <i class="fas fa-upload"></i>
+                    Audio Upload
+                </a>
+                <a href="/audio" class="nav-item">
+                    <i class="fas fa-list"></i>
+                    Playlists
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    Community
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-heart"></i>
+                    Favorites
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Mobile Navigation -->
+            <div class="mobile-nav">
+                <button class="mobile-nav-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span style="margin-left: 15px; font-weight: 600;">🎵 MusicChat</span>
+            </div>
+            
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <h1 class="header-title">Chat Room</h1>
+                    <span class="header-subtitle">Share your music discoveries</span>
+                </div>
+                <div class="header-actions">
+                    <a href="/" class="header-btn">
+                        <i class="fas fa-home"></i>
+                        Home
+                    </a>
+                    <a href="#" class="header-btn">
+                        <i class="fas fa-share"></i>
+                        Share
+                    </a>
+                    <form th:action="@{/logout}" method="post" style="display: inline;">
+                        <button type="submit" class="header-btn" style="background: linear-gradient(135deg, #1db954 0%, #1ed760 100%); border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Chat Container -->
+            <div class="chat-container">
+                <div class="messages">
+                    <!-- Success/Error Messages -->
+                    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                    
+                    <!-- Messages List - Now rendered dynamically with JavaScript -->
+                    
+                    <!-- Empty State -->
+                    <div th:if="${messages == null or messages.empty}" class="empty-state">
+                        <h3>🎵 No messages yet</h3>
+                        <p>Be the first to start the conversation about music!</p>
+                    </div>
+                </div>
+                
+                <div class="input-form">
+                    <div class="form-group">
+                        <textarea id="messageInput" 
+                                  placeholder="Share your thoughts about music... (Press Enter to send)" 
+                                  required 
+                                  maxlength="1000"></textarea>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="openMusicShareModal()">
+                                <i class="fas fa-music"></i>
+                                Share Music
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                                Send Message
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Music Share Modal -->
+    <div id="music-share-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-music"></i>
+                    Share Music
+                </h2>
+                <button class="modal-close" onclick="closeMusicShareModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="share-options">
+                    <div class="share-option" onclick="shareTrack()">
+                        <div class="share-icon">
+                            <i class="fas fa-headphones"></i>
+                        </div>
+                        <div class="share-info">
+                            <h3>Share Track</h3>
+                            <p>Share a specific audio track from your uploads</p>
+                        </div>
+                    </div>
+                    
+                    <div class="share-option" onclick="sharePlaylist()">
+                        <div class="share-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div class="share-info">
+                            <h3>Share Playlist</h3>
+                            <p>Share one of your playlists with the community</p>
+                        </div>
+                    </div>
+                    
+                    <div class="share-option" onclick="shareRecommendation()">
+                        <div class="share-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="share-info">
+                            <h3>Music Recommendation</h3>
+                            <p>Recommend a song or artist to others</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.mobile-nav-toggle');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(event.target) && 
+                !toggle.contains(event.target) && 
+                sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        });
+        
+        // Auto-scroll to bottom of messages
+        function scrollToBottom() {
+            const messagesContainer = document.querySelector('.messages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Scroll to bottom on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            scrollToBottom();
+            
+            // Add typing animation to new messages
+            const messages = document.querySelectorAll('.message');
+            messages.forEach((message, index) => {
+                message.style.animationDelay = `${index * 0.1}s`;
+            });
+            
+            // Process existing messages for music shares
+            processMusicShares();
+        });
+        
+        // Auto-refresh disabled - messages are now loaded dynamically with JavaScript
+        
+        // Enhanced form handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.querySelector('textarea[name="text"]');
+            const form = document.querySelector('form');
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Clear textarea if there was a successful submission
+            if (urlParams.has('success') && textarea) {
+                textarea.value = '';
+            }
+            
+            // Focus on textarea
+            if (textarea) {
+                textarea.focus();
+            }
+            
+            // Prevent form resubmission on page refresh
+            if (form) {
+                form.addEventListener('submit', function() {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+                    }
+                });
+            }
+            
+            // Auto-resize textarea
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                });
+                
+                // Handle Enter key in textarea
+                textarea.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        if (this.value.trim() !== '') {
+                            const form = document.querySelector('form');
+                            if (form) {
+                                form.submit();
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Add smooth scrolling to messages
+        function smoothScrollToBottom() {
+            const messagesContainer = document.querySelector('.messages');
+            messagesContainer.scrollTo({
+                top: messagesContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Enter key to send message (when in textarea)
+            if (event.key === 'Enter' && !event.shiftKey) {
+                const textarea = document.querySelector('textarea[name="text"]');
+                if (document.activeElement === textarea && textarea.value.trim() !== '') {
+                    event.preventDefault();
+                    const form = document.querySelector('form');
+                    if (form) {
+                        form.submit();
+                    }
+                }
+            }
+            
+            // Escape to close mobile sidebar
+            if (event.key === 'Escape') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+        
+        // Add message sound effect (optional)
+        function playMessageSound() {
+            // Create a simple beep sound
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+        
+        // Play sound when new messages arrive (if not from current user)
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1 && node.classList && node.classList.contains('message')) {
+                            // Play sound for new messages (except own messages)
+                            if (!node.classList.contains('own')) {
+                                playMessageSound();
+                            }
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Start observing
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.querySelector('.messages');
+            if (messagesContainer) {
+                observer.observe(messagesContainer, { childList: true });
+            }
+            
+            // Setup modal event listeners
+            setupMusicShareModalListeners();
+        });
+        
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Music Share Modal Functions
+        function openMusicShareModal() {
+            const modal = document.getElementById('music-share-modal');
+            modal.classList.add('show');
+        }
+        
+        function closeMusicShareModal() {
+            const modal = document.getElementById('music-share-modal');
+            modal.classList.remove('show');
+        }
+        
+        function setupMusicShareModalListeners() {
+            const modal = document.getElementById('music-share-modal');
+            
+            // Close modal when clicking outside of it
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeMusicShareModal();
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('show')) {
+                    closeMusicShareModal();
+                }
+            });
+        }
+        
+        // Music Sharing Functions
+        function shareTrack() {
+            // Close the main modal and show track selection
+            closeMusicShareModal();
+            showTrackSelectionModal();
+        }
+        
+        function showTrackSelectionModal() {
+            // Create and show track selection modal
+            const modal = document.createElement('div');
+            modal.id = 'track-selection-modal';
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">
+                            <i class="fas fa-headphones"></i>
+                            Select Track to Share
+                        </h2>
+                        <button class="modal-close" onclick="closeTrackSelectionModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="track-selection-loading" class="loading" style="display: block;">
+                            <div class="spinner"></div>
+                            <div>Loading your tracks...</div>
+                        </div>
+                        <div id="track-selection-container" style="display: none;">
+                            <!-- Tracks will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Load tracks
+            loadTracksForSharing();
+            
+            // Setup modal event listeners
+            setupTrackSelectionModalListeners(modal);
+        }
+        
+        function closeTrackSelectionModal() {
+            const modal = document.getElementById('track-selection-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        function setupTrackSelectionModalListeners(modal) {
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeTrackSelectionModal();
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('show')) {
+                    closeTrackSelectionModal();
+                }
+            });
+        }
+        
+        async function loadTracksForSharing() {
+            try {
+                const response = await fetch('/api/audio/tracks', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load tracks');
+                }
+                
+                const tracks = await response.json();
+                displayTracksForSharing(tracks);
+                
+            } catch (error) {
+                console.error('Failed to load tracks:', error);
+                showTrackSelectionError();
+            }
+        }
+        
+        function displayTracksForSharing(tracks) {
+            const loading = document.getElementById('track-selection-loading');
+            const container = document.getElementById('track-selection-container');
+            
+            loading.style.display = 'none';
+            container.style.display = 'block';
+            
+            if (!tracks || tracks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-music" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                        <h3>No Tracks Found</h3>
+                        <p>You haven't uploaded any tracks yet. Upload some music first!</p>
+                        <button class="btn" onclick="closeTrackSelectionModal(); window.location.href='/audio';" style="margin-top: 15px;">
+                            <i class="fas fa-upload"></i> Upload Tracks
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const tracksHtml = tracks.map(track => `
+                <div class="track-share-item" onclick="shareSelectedTrack('${escapeHtml(track.title)}', '${escapeHtml(track.artist)}', ${track.id})">
+                    <div class="track-share-info">
+                        <div class="track-share-title">${escapeHtml(track.title)}</div>
+                        <div class="track-share-artist">by ${escapeHtml(track.artist)}</div>
+                    </div>
+                    <div class="track-share-action">
+                        <i class="fas fa-share"></i>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = `
+                <div class="track-share-list">
+                    ${tracksHtml}
+                </div>
+            `;
+        }
+        
+        function showTrackSelectionError() {
+            const loading = document.getElementById('track-selection-loading');
+            const container = document.getElementById('track-selection-container');
+            
+            loading.style.display = 'none';
+            container.style.display = 'block';
+            
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                    <h3>Error Loading Tracks</h3>
+                    <p>Failed to load your tracks. Please try again.</p>
+                    <button class="btn" onclick="loadTracksForSharing()" style="margin-top: 15px;">
+                        <i class="fas fa-refresh"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
+        
+        function shareSelectedTrack(title, artist, trackId) {
+            closeTrackSelectionModal();
+            
+            // Add the track sharing message to the textarea
+            const textarea = document.querySelector('textarea[name="text"]');
+            const currentText = textarea.value;
+            const trackMessage = `🎵 Check out "${title}" by ${artist}! [TRACK:${trackId}:${escapeHtml(title)}:${escapeHtml(artist)}]`;
+            
+            textarea.value = currentText + trackMessage;
+            textarea.focus();
+            
+            // Scroll to textarea
+            textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        function sharePlaylist() {
+            // Close the main modal and show playlist selection
+            closeMusicShareModal();
+            showPlaylistSelectionModal();
+        }
+        
+        function showPlaylistSelectionModal() {
+            // Create and show playlist selection modal
+            const modal = document.createElement('div');
+            modal.id = 'playlist-selection-modal';
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">
+                            <i class="fas fa-list"></i>
+                            Select Playlist to Share
+                        </h2>
+                        <button class="modal-close" onclick="closePlaylistSelectionModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="playlist-selection-loading" class="loading" style="display: block;">
+                            <div class="spinner"></div>
+                            <div>Loading your playlists...</div>
+                        </div>
+                        <div id="playlist-selection-container" style="display: none;">
+                            <!-- Playlists will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Load playlists
+            loadPlaylistsForSharing();
+            
+            // Setup modal event listeners
+            setupPlaylistSelectionModalListeners(modal);
+        }
+        
+        function closePlaylistSelectionModal() {
+            const modal = document.getElementById('playlist-selection-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        function setupPlaylistSelectionModalListeners(modal) {
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closePlaylistSelectionModal();
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('show')) {
+                    closePlaylistSelectionModal();
+                }
+            });
+        }
+        
+        async function loadPlaylistsForSharing() {
+            try {
+                const response = await fetch('/api/playlists/owner/1', {
+                    credentials: 'include'
+                }); // Using owner ID 1 for demo
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load playlists');
+                }
+                
+                const playlists = await response.json();
+                displayPlaylistsForSharing(playlists);
+                
+            } catch (error) {
+                console.error('Failed to load playlists:', error);
+                showPlaylistSelectionError();
+            }
+        }
+        
+        function displayPlaylistsForSharing(playlists) {
+            const loading = document.getElementById('playlist-selection-loading');
+            const container = document.getElementById('playlist-selection-container');
+            
+            loading.style.display = 'none';
+            container.style.display = 'block';
+            
+            if (!playlists || playlists.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-list" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                        <h3>No Playlists Found</h3>
+                        <p>You haven't created any playlists yet. Create some playlists first!</p>
+                        <button class="btn" onclick="closePlaylistSelectionModal(); window.location.href='/audio';" style="margin-top: 15px;">
+                            <i class="fas fa-plus"></i> Create Playlists
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const playlistsHtml = playlists.map(playlist => `
+                <div class="playlist-share-item" onclick="shareSelectedPlaylist('${escapeHtml(playlist.name)}', '${escapeHtml(playlist.description || 'No description')}', ${playlist.id})">
+                    <div class="playlist-share-info">
+                        <div class="playlist-share-title">${escapeHtml(playlist.name)}</div>
+                        <div class="playlist-share-description">${escapeHtml(playlist.description || 'No description')}</div>
+                        <div class="playlist-share-stats">
+                            ${playlist.tracks ? playlist.tracks.length : 0} tracks • Created ${new Date(playlist.createdAt).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div class="playlist-share-action">
+                        <i class="fas fa-share"></i>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = `
+                <div class="playlist-share-list">
+                    ${playlistsHtml}
+                </div>
+            `;
+        }
+        
+        function showPlaylistSelectionError() {
+            const loading = document.getElementById('playlist-selection-loading');
+            const container = document.getElementById('playlist-selection-container');
+            
+            loading.style.display = 'none';
+            container.style.display = 'block';
+            
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                    <h3>Error Loading Playlists</h3>
+                    <p>Failed to load your playlists. Please try again.</p>
+                    <button class="btn" onclick="loadPlaylistsForSharing()" style="margin-top: 15px;">
+                        <i class="fas fa-refresh"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
+        
+        function shareSelectedPlaylist(name, description, playlistId) {
+            closePlaylistSelectionModal();
+            
+            // Add the playlist sharing message to the textarea
+            const textarea = document.querySelector('textarea[name="text"]');
+            const currentText = textarea.value;
+            const playlistMessage = `🎶 Check out my playlist "${name}"! ${description} [PLAYLIST:${playlistId}:${escapeHtml(name)}:${escapeHtml(description)}]`;
+            
+            textarea.value = currentText + playlistMessage;
+            textarea.focus();
+            
+            // Scroll to textarea
+            textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        function shareRecommendation() {
+            closeMusicShareModal();
+            
+            // Add a placeholder message for recommendations
+            const textarea = document.querySelector('textarea[name="text"]');
+            const currentText = textarea.value;
+            const recommendationMessage = "⭐ Music recommendation: ";
+            
+            textarea.value = currentText + recommendationMessage;
+            textarea.focus();
+            
+            // Scroll to textarea
+            textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        // Music Share Processing Functions
+        function processMusicShares() {
+            const messages = document.querySelectorAll('.message-text');
+            messages.forEach(messageElement => {
+                const text = messageElement.textContent;
+                
+                // Process track shares
+                const trackRegex = /\[TRACK:(\d+):([^:]+):([^\]]+)\]/g;
+                let processedText = text.replace(trackRegex, (match, trackId, title, artist) => {
+                    return `<div class="music-share-card track-share-card">
+                        <div class="track-share-info">
+                            <div class="track-share-title">${title}</div>
+                            <div class="track-share-artist">by ${artist}</div>
+                        </div>
+                        <button class="track-play-button" onclick="playTrack(${trackId}, '${title}', '${artist}')" title="Play Track">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>`;
+                });
+                
+                // Process playlist shares
+                const playlistRegex = /\[PLAYLIST:(\d+):([^:]+):([^\]]+)\]/g;
+                processedText = processedText.replace(playlistRegex, (match, playlistId, name, description) => {
+                    return `<div class="music-share-card playlist-share-card" onclick="togglePlaylist(${playlistId})">
+                        <div class="playlist-share-header">
+                            <div class="playlist-share-info">
+                                <div class="playlist-share-title">${name}</div>
+                                <div class="playlist-share-description">${description}</div>
+                            </div>
+                            <button class="playlist-expand-button" onclick="event.stopPropagation(); togglePlaylist(${playlistId})" title="View Tracks">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="playlist-tracks" id="playlist-tracks-${playlistId}">
+                            <!-- Tracks will be loaded here -->
+                        </div>
+                    </div>`;
+                });
+                
+                if (processedText !== text) {
+                    messageElement.innerHTML = processedText;
+                }
+            });
+        }
+        
+        // Track playing functionality
+        function playTrack(trackId, title, artist) {
+            const button = event.target.closest('.track-play-button');
+            const icon = button.querySelector('i');
+            
+            if (button.classList.contains('playing')) {
+                // Stop playing
+                button.classList.remove('playing');
+                icon.className = 'fas fa-play';
+                stopCurrentTrack();
+            } else {
+                // Start playing
+                stopAllTracks(); // Stop other tracks first
+                button.classList.add('playing');
+                icon.className = 'fas fa-pause';
+                playCurrentTrack(trackId, title, artist);
+            }
+        }
+        
+        function stopAllTracks() {
+            const allButtons = document.querySelectorAll('.track-play-button');
+            allButtons.forEach(button => {
+                button.classList.remove('playing');
+                const icon = button.querySelector('i');
+                icon.className = 'fas fa-play';
+            });
+        }
+        
+        function stopCurrentTrack() {
+            // Stop audio if playing
+            if (window.currentAudio) {
+                window.currentAudio.pause();
+                window.currentAudio.currentTime = 0; // Reset to beginning
+                window.currentAudio = null;
+            }
+        }
+        
+        function playCurrentTrack(trackId, title, artist) {
+            console.log(`Playing track ${trackId}: ${title} by ${artist}`);
+            
+            // Stop any currently playing audio
+            stopCurrentTrack();
+            
+            // Create audio element and play the track using the download endpoint
+            const audio = new Audio(`/api/audio/download/${trackId}`);
+            audio.preload = 'metadata';
+            
+            // Store reference to current audio
+            window.currentAudio = audio;
+            
+            // Audio event listeners
+            audio.addEventListener('loadstart', () => {
+                showNotification(`Loading: ${title} by ${artist}`);
+            });
+            
+            audio.addEventListener('canplay', () => {
+                showNotification(`Now playing: ${title} by ${artist}`);
+            });
+            
+            audio.addEventListener('error', (e) => {
+                console.error('Audio playback error:', e);
+                showNotification(`Error playing: ${title} by ${artist}`);
+                
+                // Reset button state
+                const button = document.querySelector('.track-play-button.playing');
+                if (button) {
+                    button.classList.remove('playing');
+                    const icon = button.querySelector('i');
+                    icon.className = 'fas fa-play';
+                }
+                
+                // Clear current audio reference
+                window.currentAudio = null;
+            });
+            
+            audio.addEventListener('ended', () => {
+                console.log(`Track ended: ${title} by ${artist}`);
+                showNotification(`Finished: ${title} by ${artist}`);
+                
+                // Reset button state
+                const button = document.querySelector('.track-play-button.playing');
+                if (button) {
+                    button.classList.remove('playing');
+                    const icon = button.querySelector('i');
+                    icon.className = 'fas fa-play';
+                }
+                
+                // Clear current audio reference
+                window.currentAudio = null;
+            });
+            
+            audio.addEventListener('pause', () => {
+                console.log(`Track paused: ${title} by ${artist}`);
+                showNotification(`Paused: ${title} by ${artist}`);
+            });
+            
+            // Start playing
+            audio.play().catch(error => {
+                console.error('Playback failed:', error);
+                showNotification(`Cannot play: ${title} by ${artist}`);
+                
+                // Reset button state
+                const button = document.querySelector('.track-play-button.playing');
+                if (button) {
+                    button.classList.remove('playing');
+                    const icon = button.querySelector('i');
+                    icon.className = 'fas fa-play';
+                }
+                
+                // Clear current audio reference
+                window.currentAudio = null;
+            });
+        }
+        
+        // Playlist functionality
+        async function togglePlaylist(playlistId) {
+            const tracksContainer = document.getElementById(`playlist-tracks-${playlistId}`);
+            const button = document.querySelector(`[onclick*="togglePlaylist(${playlistId})"] .playlist-expand-button`);
+            
+            if (tracksContainer.classList.contains('expanded')) {
+                // Collapse
+                tracksContainer.classList.remove('expanded');
+                button.classList.remove('expanded');
+            } else {
+                // Expand and load tracks
+                if (tracksContainer.innerHTML.trim() === '') {
+                    await loadPlaylistTracks(playlistId);
+                }
+                tracksContainer.classList.add('expanded');
+                button.classList.add('expanded');
+            }
+        }
+        
+        async function loadPlaylistTracks(playlistId) {
+            const tracksContainer = document.getElementById(`playlist-tracks-${playlistId}`);
+            
+            try {
+                // Show loading
+                tracksContainer.innerHTML = '<div style="text-align: center; padding: 10px; color: rgba(255,255,255,0.6);">Loading tracks...</div>';
+                
+                const response = await fetch(`/api/playlists/${playlistId}/tracks`, {
+                    credentials: 'include'
+                });
+                const tracks = await response.json();
+                
+                if (tracks && tracks.length > 0) {
+                    const tracksHtml = tracks.map((playlistTrack, index) => `
+                        <div class="playlist-track-item">
+                            <div class="playlist-track-number">${index + 1}</div>
+                            <div class="playlist-track-info">
+                                <div class="playlist-track-title">${escapeHtml(playlistTrack.track.title)}</div>
+                                <div class="playlist-track-artist">by ${escapeHtml(playlistTrack.track.artist)}</div>
+                            </div>
+                            <button class="playlist-track-play" onclick="playTrack(${playlistTrack.track.id}, '${escapeHtml(playlistTrack.track.title)}', '${escapeHtml(playlistTrack.track.artist)}')" title="Play Track">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                    `).join('');
+                    
+                    tracksContainer.innerHTML = tracksHtml;
+                } else {
+                    tracksContainer.innerHTML = '<div style="text-align: center; padding: 10px; color: rgba(255,255,255,0.6);">No tracks in this playlist</div>';
+                }
+                
+            } catch (error) {
+                console.error('Failed to load playlist tracks:', error);
+                tracksContainer.innerHTML = '<div style="text-align: center; padding: 10px; color: rgba(255,59,48,0.8);">Failed to load tracks</div>';
+            }
+        }
+        
+        // Notification system
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #1db954, #1ed760);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 5px 15px rgba(29, 185, 84, 0.3);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 300px;
+                animation: slideInRight 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Global audio player controls
+        document.addEventListener('keydown', function(e) {
+            // Space bar to play/pause
+            if (e.code === 'Space' && !e.target.matches('input, textarea')) {
+                e.preventDefault();
+                const playingButton = document.querySelector('.track-play-button.playing');
+                if (playingButton) {
+                    playingButton.click();
+                }
+            }
+            
+            // Escape to stop all audio
+            if (e.key === 'Escape' && window.currentAudio) {
+                stopAllTracks();
+            }
+        });
+
+        // Auto-stop audio when page is unloaded
+        window.addEventListener('beforeunload', function() {
+            stopCurrentTrack();
+        });
+        
+        // Global variable to store current user
+        let currentUser = null;
+        
+        // Get current user information
+        async function getCurrentUser() {
+            try {
+                const response = await fetch('/api/me', {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const userData = await response.json();
+                    currentUser = userData.username;
+                    console.log('Current user:', currentUser);
+                }
+            } catch (error) {
+                console.error('Error getting current user:', error);
+            }
+        }
+        
+        // Render a single message with WhatsApp-style layout
+        function renderMessage(message, isOwnMessage) {
+            const messagesContainer = document.querySelector('.messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isOwnMessage ? 'own' : 'other'}`;
+            messageDiv.setAttribute('data-sender', message.sender);
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = message.sender.charAt(0).toUpperCase();
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            const header = document.createElement('div');
+            header.className = 'message-header';
+            header.textContent = message.sender;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            
+            const text = document.createElement('div');
+            text.className = 'message-text';
+            text.textContent = message.text;
+            
+            const time = document.createElement('div');
+            time.className = 'message-time';
+            const timestamp = new Date(message.timestamp);
+            time.textContent = timestamp.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            bubble.appendChild(text);
+            bubble.appendChild(time);
+            content.appendChild(header);
+            content.appendChild(bubble);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        // Load and render all messages
+        async function loadMessages() {
+            try {
+                const response = await fetch('/api/chat/messages', {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const messages = await response.json();
+                    const messagesContainer = document.querySelector('.messages');
+                    
+                    // Clear existing messages (except alerts)
+                    const existingMessages = messagesContainer.querySelectorAll('.message');
+                    existingMessages.forEach(msg => msg.remove());
+                    
+                    // Render each message
+                    messages.forEach(message => {
+                        const isOwnMessage = currentUser && message.sender === currentUser;
+                        renderMessage(message, isOwnMessage);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+        
+        // New sendMessage function that uses authentication
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const content = messageInput.value.trim();
+            
+            if (!content) {
+                alert('Please enter a message');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/chat/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content: content }),
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const message = await response.json();
+                    console.log('Message sent by:', message.sender);
+                    
+                    // Clear the input
+                    messageInput.value = '';
+                    
+                    // Add the new message to the UI immediately
+                    const isOwnMessage = currentUser && message.sender === currentUser;
+                    renderMessage(message, isOwnMessage);
+                } else {
+                    const error = await response.json();
+                    alert('Error sending message: ' + (error.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error sending message. Please try again.');
+            }
+        }
+        
+        // Initialize chat functionality
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Get current user first
+            await getCurrentUser();
+            
+            // Load messages with new rendering
+            await loadMessages();
+            
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        sendMessage();
+                    }
+                });
+                
+                // Auto-resize textarea
+                messageInput.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                });
+            }
+            
+            // Auto-refresh disabled - messages will only load on page load and when new messages are sent
+        });
+    </script>
+</body>
+</html>

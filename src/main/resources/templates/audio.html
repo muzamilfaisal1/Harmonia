@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusicChat - Audio Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1db954 0%, #191414 50%, #1ed760 100%);
+            min-height: 100vh;
+            color: #ffffff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #1db954, #1ed760, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(29, 185, 84, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(29, 185, 84, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
+        }
+        
+        .content-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1db954;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #ffffff;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #1db954;
+            box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.2);
+        }
+        
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .file-upload input[type=file] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-upload-label {
+            display: block;
+            padding: 20px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover .file-upload-label {
+            border-color: #1db954;
+            background: rgba(29, 185, 84, 0.1);
+        }
+        
+        .file-upload-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #1db954;
+        }
+        
+        .track-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .track-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .track-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .track-info {
+            flex: 1;
+        }
+        
+        .track-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .track-artist {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .track-checkbox {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+        
+        .playlist-list {
+            margin-top: 20px;
+        }
+        
+        .playlist-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .playlist-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .playlist-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: #1db954;
+        }
+        
+        .playlist-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+        
+        .playlist-stats {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid;
+        }
+        
+        .alert-success {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: #28a745;
+            color: #d4edda;
+        }
+        
+        .alert-error {
+            background: rgba(220, 53, 69, 0.2);
+            border-color: #dc3545;
+            color: #f8d7da;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #1db954;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1db954 0%, #191414 50%, #1ed760 100%);
+            margin: auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.3s ease;
+        }
+        
+        .modal-header {
+            padding: 25px 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+        
+        .modal-body {
+            padding: 30px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .track-list-modal {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .track-item-modal {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .track-item-modal:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .track-number {
+            background: linear-gradient(135deg, #1db954, #1ed760);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .track-info-modal {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .track-title-modal {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .track-artist-modal {
+            font-size: 0.95rem;
+            opacity: 0.8;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .track-duration {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-left: 15px;
+            flex-shrink: 0;
+        }
+        
+        .empty-playlist {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .empty-playlist i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .empty-playlist h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .empty-playlist p {
+            font-size: 0.95rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 20px;
+            }
+            
+            .modal-header {
+                padding: 20px;
+            }
+            
+            .modal-body {
+                padding: 20px;
+            }
+            
+            .track-item-modal {
+                padding: 15px;
+            }
+            
+            .track-number {
+                width: 30px;
+                height: 30px;
+                margin-right: 15px;
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Rating System Styles */
+        .rating-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .star-rating {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .star {
+            font-size: 1.2rem;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .star:hover,
+        .star.active {
+            color: #ffd700;
+        }
+        
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .rating-value {
+            font-weight: 600;
+            color: #1db954;
+        }
+        
+        .rating-count {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Favourite System Styles */
+        .favourite-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .favourite-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px;
+            border-radius: 50%;
+        }
+        
+        .favourite-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .favourite-btn.not-favourited {
+            color: #666;
+        }
+        
+        .favourite-btn.favourited {
+            color: #e74c3c;
+            animation: heartbeat 0.6s ease-in-out;
+        }
+        
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .favourite-count {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px;
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+        
+        .delete-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .delete-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Track Actions */
+        .track-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .action-btn.rated {
+            background: rgba(29, 185, 84, 0.2);
+            border-color: #1db954;
+        }
+        
+        .action-btn.favourited {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: #e74c3c;
+        }
+        
+        /* External Search Results */
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .search-result-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .search-result-cover {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            margin-right: 15px;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .search-result-info {
+            flex: 1;
+        }
+        
+        .search-result-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #ffffff;
+        }
+        
+        .search-result-artist {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 2px;
+        }
+        
+        .search-result-album {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+        
+        .search-result-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .preview-btn {
+            background: linear-gradient(135deg, #1db954, #1ed760);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .preview-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+        }
+        
+        /* User Authentication */
+        
+        /* Share Modal Styles */
+        .share-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .share-option {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        
+        .share-option:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .share-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #1db954, #1ed760);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .share-icon i {
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .share-content {
+            flex: 1;
+        }
+        
+        .share-content h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+        
+        .share-content p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .content-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .user-info {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+            
+            .search-result-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .search-result-cover {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- User Info -->
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎵</div>
+            <h1 class="title">Audio Management</h1>
+            <p class="subtitle">Upload tracks and manage your playlists</p>
+        </div>
+        
+        <div class="nav-buttons">
+            <a href="/" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="/chat" class="btn btn-secondary">
+                <i class="fas fa-comments"></i> Chat
+            </a>
+            <button class="btn" onclick="refreshTracks()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button class="btn" onclick="showExternalSearch()">
+                <i class="fas fa-search"></i> Search Music
+            </button>
+            <button class="btn" onclick="showShareModal()">
+                <i class="fas fa-share"></i> Share Music
+            </button>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn" style="background: linear-gradient(135deg, #1db954 0%, #1ed760 100%); border: none; color: white;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
+        </div>
+        
+        <!-- Success/Error Messages -->
+        <div id="alert-container"></div>
+        
+        <div class="content-section">
+            <!-- Audio Upload Section -->
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-upload"></i>
+                    Upload Audio Track
+                </h2>
+                
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label class="form-label" for="title">Track Title *</label>
+                        <input type="text" id="title" name="title" class="form-input" 
+                               placeholder="Enter track title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="artist">Artist *</label>
+                        <input type="text" id="artist" name="artist" class="form-input" 
+                               placeholder="Enter artist name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Audio File *</label>
+                        <div class="file-upload">
+                            <input type="file" id="audio-file" name="file" 
+                                   accept="audio/*" required>
+                            <label for="audio-file" class="file-upload-label">
+                                <div class="file-upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div>Click to upload audio file</div>
+                                <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.7;">
+                                    Supports MP3, WAV, M4A, etc. (Max 50MB)
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn" style="width: 100%;">
+                        <i class="fas fa-upload"></i> Upload Track
+                    </button>
+                </form>
+                
+                <div id="upload-loading" class="loading">
+                    <div class="spinner"></div>
+                    <div>Uploading track...</div>
+                </div>
+            </div>
+            
+            <!-- Playlist Creation Section -->
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-list"></i>
+                    Create Playlist
+                </h2>
+                
+                <form id="playlist-form">
+                    <div class="form-group">
+                        <label class="form-label" for="playlist-name">Playlist Name *</label>
+                        <input type="text" id="playlist-name" name="name" class="form-input" 
+                               placeholder="Enter playlist name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="playlist-description">Description</label>
+                        <textarea id="playlist-description" name="description" class="form-textarea" 
+                                  rows="3" placeholder="Enter playlist description"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Select Tracks</label>
+                        <div id="track-selection" class="track-list">
+                            <div style="text-align: center; padding: 20px; opacity: 0.6;">
+                                No tracks available. Upload some tracks first.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn" style="width: 100%;">
+                        <i class="fas fa-plus"></i> Create Playlist
+                    </button>
+                </form>
+                
+                <div id="playlist-loading" class="loading">
+                    <div class="spinner"></div>
+                    <div>Creating playlist...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- External Music Search Section -->
+        <div class="section" id="external-search-section" style="display: none;">
+            <h2 class="section-title">
+                <i class="fas fa-globe"></i>
+                External Music Search
+            </h2>
+            <p style="margin-bottom: 20px; opacity: 0.8;">Search bar that calls ExternalMusicService to fetch metadata from Deezer API. Displays track title, artist name, album name, and thumbnail image.</p>
+            
+            <div class="form-group">
+                <label class="form-label" for="search-query">Search for Music</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="search-query" class="form-input" 
+                           placeholder="Enter artist, song, or album name" style="flex: 1;">
+                    <button class="btn" onclick="searchExternalMusic()">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+            
+            <div id="search-results" class="track-list" style="margin-top: 20px;">
+                <!-- Search results will appear here -->
+            </div>
+            
+            <div id="search-loading" class="loading">
+                <div class="spinner"></div>
+                <div>Searching for music...</div>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                <h3 style="margin-bottom: 10px; color: #1db954;">
+                    <i class="fas fa-info-circle"></i> Cache Statistics
+                </h3>
+                <div id="cache-stats">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading cache stats...</div>
+                    </div>
+                </div>
+                <button class="btn" onclick="clearCache()" style="margin-top: 10px;">
+                    <i class="fas fa-trash"></i> Clear Cache
+                </button>
+            </div>
+        </div>
+
+        <!-- User's Favorite Tracks -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-heart"></i>
+                My Favorite Tracks
+            </h2>
+            <p style="margin-bottom: 20px; opacity: 0.8;">Your favorite tracks with rating and favorite management. Each track has rating forms (1-5 stars) and favorite toggle buttons.</p>
+            
+            <div id="favorite-tracks-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Loading your favorite tracks...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing Playlists Section -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-music"></i>
+                Your Playlists
+            </h2>
+            
+            <div id="playlists-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Loading playlists...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Playlist Tracks Modal -->
+    <div id="playlist-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-music"></i>
+                    <span id="modal-playlist-name">Playlist Tracks</span>
+                </h2>
+                <button class="modal-close" onclick="closePlaylistModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-tracks-container">
+                    <!-- Track list will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Share Music Modal -->
+    <div id="share-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-music"></i>
+                    Share Music
+                </h2>
+                <button class="modal-close" onclick="closeShareModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="share-options">
+                    <div class="share-option" onclick="shareTrack()">
+                        <div class="share-icon">
+                            <i class="fas fa-headphones"></i>
+                        </div>
+                        <div class="share-content">
+                            <h3>Share Track</h3>
+                            <p>Share a specific audio track from your uploads.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="share-option" onclick="sharePlaylist()">
+                        <div class="share-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div class="share-content">
+                            <h3>Share Playlist</h3>
+                            <p>Share one of your playlists with the community.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="share-option" onclick="shareRecommendation()">
+                        <div class="share-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="share-content">
+                            <h3>Music Recommendation</h3>
+                            <p>Recommend a song or artist to others.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let availableTracks = [];
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTracks();
+            loadPlaylists();
+            loadFavoriteTracks();
+            
+            // Setup form handlers
+            setupUploadForm();
+            setupPlaylistForm();
+            
+            // Setup modal event listeners
+            setupModalEventListeners();
+            
+            // Initialize Week 10 features
+            initializeWeek10Features();
+        });
+        
+        function setupUploadForm() {
+            const form = document.getElementById('upload-form');
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const loading = document.getElementById('upload-loading');
+                const submitBtn = form.querySelector('button[type="submit"]');
+                
+                // Show loading
+                loading.style.display = 'block';
+                submitBtn.disabled = true;
+                
+                try {
+                    const response = await fetch('/api/audio/upload', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showAlert('Track uploaded successfully!', 'success');
+                        form.reset();
+                        // Reset file input specifically to clear the file selection
+                        document.getElementById('audio-file').value = '';
+                        loadTracks(); // Refresh track list
+                    } else {
+                        showAlert(result.message || 'Upload failed. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    showAlert('Upload failed. Please check your connection.', 'error');
+                } finally {
+                    loading.style.display = 'none';
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+        
+        function setupPlaylistForm() {
+            const form = document.getElementById('playlist-form');
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const selectedTracks = Array.from(document.querySelectorAll('#track-selection input[type="checkbox"]:checked'))
+                    .map(cb => parseInt(cb.value));
+                
+                if (selectedTracks.length === 0) {
+                    showAlert('Please select at least one track for the playlist.', 'error');
+                    return;
+                }
+                
+                const playlistData = {
+                    ownerId: 1, // Using owner ID 1 for demo
+                    name: document.getElementById('playlist-name').value,
+                    description: document.getElementById('playlist-description').value,
+                    trackIds: selectedTracks
+                };
+                
+                const loading = document.getElementById('playlist-loading');
+                const submitBtn = form.querySelector('button[type="submit"]');
+                
+                // Show loading
+                loading.style.display = 'block';
+                submitBtn.disabled = true;
+                
+                try {
+                    const response = await fetch('/api/playlists', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(playlistData),
+                        credentials: 'include'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showAlert('Playlist created successfully!', 'success');
+                        form.reset();
+                        loadPlaylists(); // Refresh playlist list
+                        // Uncheck all track checkboxes
+                        document.querySelectorAll('#track-selection input[type="checkbox"]').forEach(cb => cb.checked = false);
+                    } else {
+                        showAlert(result.message || 'Playlist creation failed. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    showAlert('Playlist creation failed. Please check your connection.', 'error');
+                } finally {
+                    loading.style.display = 'none';
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+        
+        async function loadTracks() {
+            try {
+                const response = await fetch('/api/audio/tracks/my', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Failed to load tracks - HTTP ' + response.status + ': ' + errorText);
+                    showAlert('Failed to load tracks. Server returned: ' + response.status, 'error');
+                    return;
+                }
+                
+                const tracks = await response.json();
+                console.log('Loaded tracks:', tracks);
+                availableTracks = tracks;
+                updateTrackSelection();
+                
+                // Load ratings and favourites for all tracks
+                tracks.forEach(track => {
+                    loadTrackRatings(track.id);
+                    loadTrackFavourites(track.id);
+                });
+            } catch (error) {
+                console.error('Failed to load tracks:', error);
+                showAlert('Failed to load tracks. Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadPlaylists() {
+            try {
+                const response = await fetch('/api/playlists/owner/1', {
+                    credentials: 'include'
+                }); // Using owner ID 1 for demo
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Failed to load playlists - HTTP ' + response.status + ': ' + errorText);
+                    document.getElementById('playlists-container').innerHTML = 
+                        '<div style="text-align: center; padding: 20px; opacity: 0.6;">Failed to load playlists. Server returned: ' + response.status + '</div>';
+                    return;
+                }
+                
+                const playlists = await response.json();
+                console.log('Loaded playlists:', playlists);
+                displayPlaylists(playlists);
+            } catch (error) {
+                console.error('Failed to load playlists:', error);
+                document.getElementById('playlists-container').innerHTML = 
+                    '<div style="text-align: center; padding: 20px; opacity: 0.6;">Failed to load playlists. Error: ' + error.message + '</div>';
+            }
+        }
+        
+        async function loadFavoriteTracks() {
+            try {
+                // For demo purposes, using userId = 1. In a real app, this would come from authentication
+                const userId = 1;
+                const response = await fetch(`/api/audio/favorites?userId=${userId}`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Failed to load favorite tracks - HTTP ' + response.status + ': ' + errorText);
+                    document.getElementById('favorite-tracks-container').innerHTML = 
+                        '<div style="text-align: center; padding: 20px; opacity: 0.6;">Failed to load favorite tracks. Server returned: ' + response.status + '</div>';
+                    return;
+                }
+                
+                const result = await response.json();
+                console.log('Loaded favorite tracks:', result);
+                displayFavoriteTracks(result.tracks || []);
+            } catch (error) {
+                console.error('Failed to load favorite tracks:', error);
+                document.getElementById('favorite-tracks-container').innerHTML = 
+                    '<div style="text-align: center; padding: 20px; opacity: 0.6;">Failed to load favorite tracks. Error: ' + error.message + '</div>';
+            }
+        }
+        
+        function displayFavoriteTracks(tracks) {
+            const container = document.getElementById('favorite-tracks-container');
+            
+            if (tracks.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; opacity: 0.6;">
+                        <i class="fas fa-heart" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                        <div style="font-size: 18px; margin-bottom: 8px;">No favorite tracks yet</div>
+                        <div>Start adding tracks to your favorites to see them here!</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = tracks.map(track => `
+                <div class="track-item">
+                    <div class="track-info">
+                        <div class="track-title">${track.title}</div>
+                        <div class="track-artist">by ${track.artist}</div>
+                        <div class="track-actions">
+                            <div class="rating-container">
+                                <div class="star-rating" data-track-id="${track.id}">
+                                    <span class="star" data-rating="1">★</span>
+                                    <span class="star" data-rating="2">★</span>
+                                    <span class="star" data-rating="3">★</span>
+                                    <span class="star" data-rating="4">★</span>
+                                    <span class="star" data-rating="5">★</span>
+                                </div>
+                                <div class="rating-display" id="rating-${track.id}">
+                                    <span class="rating-value">--</span>
+                                    <span class="rating-count">(0 ratings)</span>
+                                </div>
+                            </div>
+                            <div class="favourite-container">
+                                <button class="favourite-btn favourited" data-track-id="${track.id}" onclick="toggleFavourite(${track.id})">
+                                    ♥
+                                </button>
+                                <span class="favourite-count" id="favourite-${track.id}">0 favourites</span>
+                            </div>
+                            <div class="delete-container">
+                                <button class="delete-btn" data-track-id="${track.id}" onclick="deleteTrack(${track.id}, '${track.title}')" title="Delete track">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Load ratings and favourites for all favorite tracks
+            tracks.forEach(track => {
+                loadTrackRatings(track.id);
+                loadTrackFavourites(track.id);
+            });
+        }
+        
+        function updateTrackSelection() {
+            const container = document.getElementById('track-selection');
+            
+            if (availableTracks.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.6;">No tracks available. Upload some tracks first.</div>';
+                return;
+            }
+            
+            container.innerHTML = availableTracks.map(track => `
+                <div class="track-item">
+                    <input type="checkbox" class="track-checkbox" value="${track.id}">
+                    <div class="track-info">
+                        <div class="track-title">${track.title}</div>
+                        <div class="track-artist">by ${track.artist}</div>
+                        <div class="track-actions">
+                            <div class="rating-container">
+                                <div class="star-rating" data-track-id="${track.id}">
+                                    <span class="star" data-rating="1">★</span>
+                                    <span class="star" data-rating="2">★</span>
+                                    <span class="star" data-rating="3">★</span>
+                                    <span class="star" data-rating="4">★</span>
+                                    <span class="star" data-rating="5">★</span>
+                                </div>
+                                <div class="rating-display" id="rating-${track.id}">
+                                    <span class="rating-value">--</span>
+                                    <span class="rating-count">(0 ratings)</span>
+                                </div>
+                            </div>
+                            <div class="favourite-container">
+                                <button class="favourite-btn not-favourited" data-track-id="${track.id}" onclick="toggleFavourite(${track.id})">
+                                    ♥
+                                </button>
+                                <span class="favourite-count" id="favourite-${track.id}">0 favourites</span>
+                            </div>
+                            <div class="delete-container">
+                                <button class="delete-btn" data-track-id="${track.id}" onclick="deleteTrack(${track.id}, '${track.title}')" title="Delete track">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function displayPlaylists(playlists) {
+            const container = document.getElementById('playlists-container');
+            
+            if (playlists.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.6;">No playlists created yet.</div>';
+                return;
+            }
+            
+            container.innerHTML = playlists.map(playlist => `
+                <div class="playlist-item">
+                    <div class="playlist-name">${playlist.name}</div>
+                    <div class="playlist-description">${playlist.description || 'No description'}</div>
+                    <div class="playlist-stats">
+                        Created: ${new Date(playlist.createdAt).toLocaleDateString()}
+                        <button onclick="viewPlaylist(${playlist.id})" class="btn" style="margin-left: 10px; padding: 5px 10px; font-size: 0.8rem;">
+                            View Tracks
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function viewPlaylist(playlistId) {
+            try {
+                // Show loading state
+                const modal = document.getElementById('playlist-modal');
+                const container = document.getElementById('modal-tracks-container');
+                const titleSpan = document.getElementById('modal-playlist-name');
+                
+                // Set loading content
+                container.innerHTML = `
+                    <div class="loading" style="display: block;">
+                        <div class="spinner"></div>
+                        <div>Loading playlist tracks...</div>
+                    </div>
+                `;
+                
+                // Show modal
+                modal.classList.add('show');
+                
+                // Fetch playlist details first
+                const playlistResponse = await fetch(`/api/playlists/${playlistId}`, {
+                    credentials: 'include'
+                });
+                const playlist = await playlistResponse.json();
+                
+                // Update modal title
+                titleSpan.textContent = playlist.name;
+                
+                // Fetch tracks
+                const tracksResponse = await fetch(`/api/playlists/${playlistId}/tracks`, {
+                    credentials: 'include'
+                });
+                const tracks = await tracksResponse.json();
+                
+                // Display tracks
+                displayPlaylistTracksModal(tracks);
+                
+            } catch (error) {
+                console.error('Failed to load playlist tracks:', error);
+                const container = document.getElementById('modal-tracks-container');
+                container.innerHTML = `
+                    <div class="empty-playlist">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Error Loading Tracks</h3>
+                        <p>Failed to load playlist tracks. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function displayPlaylistTracksModal(tracks) {
+            const container = document.getElementById('modal-tracks-container');
+            
+            if (!tracks || tracks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-playlist">
+                        <i class="fas fa-music"></i>
+                        <h3>No Tracks Yet</h3>
+                        <p>This playlist is empty. Add some tracks to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const tracksHtml = tracks.map((playlistTrack, index) => `
+                <div class="track-item-modal">
+                    <div class="track-number">${index + 1}</div>
+                    <div class="track-info-modal">
+                        <div class="track-title-modal">${escapeHtml(playlistTrack.track.title)}</div>
+                        <div class="track-artist-modal">by ${escapeHtml(playlistTrack.track.artist)}</div>
+                        <div class="track-actions">
+                            <div class="rating-container">
+                                <div class="star-rating" data-track-id="${playlistTrack.track.id}">
+                                    <span class="star" data-rating="1">★</span>
+                                    <span class="star" data-rating="2">★</span>
+                                    <span class="star" data-rating="3">★</span>
+                                    <span class="star" data-rating="4">★</span>
+                                    <span class="star" data-rating="5">★</span>
+                                </div>
+                                <div class="rating-display" id="rating-${playlistTrack.track.id}">
+                                    <span class="rating-value">--</span>
+                                    <span class="rating-count">(0 ratings)</span>
+                                </div>
+                            </div>
+                            <div class="favourite-container">
+                                <button class="favourite-btn not-favourited" data-track-id="${playlistTrack.track.id}" onclick="toggleFavourite(${playlistTrack.track.id})">
+                                    ♥
+                                </button>
+                                <span class="favourite-count" id="favourite-${playlistTrack.track.id}">0 favourites</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="track-duration">
+                        ${playlistTrack.track.duration || '--:--'}
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = `
+                <div class="track-list-modal">
+                    ${tracksHtml}
+                </div>
+            `;
+        }
+        
+        function closePlaylistModal() {
+            const modal = document.getElementById('playlist-modal');
+            modal.classList.remove('show');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function setupModalEventListeners() {
+            const playlistModal = document.getElementById('playlist-modal');
+            const shareModal = document.getElementById('share-modal');
+            
+            // Close playlist modal when clicking outside of it
+            playlistModal.addEventListener('click', function(e) {
+                if (e.target === playlistModal) {
+                    closePlaylistModal();
+                }
+            });
+            
+            // Close share modal when clicking outside of it
+            shareModal.addEventListener('click', function(e) {
+                if (e.target === shareModal) {
+                    closeShareModal();
+                }
+            });
+            
+            // Close modals with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (playlistModal.classList.contains('show')) {
+                        closePlaylistModal();
+                    }
+                    if (shareModal.classList.contains('show')) {
+                        closeShareModal();
+                    }
+                }
+            });
+        }
+        
+        function refreshTracks() {
+            loadTracks();
+            loadPlaylists();
+            showAlert('Data refreshed successfully!', 'success');
+        }
+        
+        function showAlert(message, type) {
+            const container = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer; font-size: 1.2rem;">&times;</button>
+                </div>
+            `;
+            
+            container.appendChild(alert);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentElement) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+        
+        // Week 10 Features - External Music Search
+        function showExternalSearch() {
+            const section = document.getElementById('external-search-section');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+            
+            if (section.style.display === 'block') {
+                loadCacheStats();
+            }
+        }
+        
+        async function searchExternalMusic() {
+            const query = document.getElementById('search-query').value.trim();
+            if (!query) {
+                showAlert('Please enter a search query', 'error');
+                return;
+            }
+            
+            const loading = document.getElementById('search-loading');
+            const results = document.getElementById('search-results');
+            
+            loading.style.display = 'block';
+            results.innerHTML = '';
+            
+            try {
+                const response = await fetch(`/api/audio/search/external?query=${encodeURIComponent(query)}`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displaySearchResults(data.results);
+                    loadCacheStats(); // Refresh cache stats
+                } else {
+                    showAlert(data.message || 'Search failed', 'error');
+                }
+            } catch (error) {
+                showAlert('Search failed. Please check your connection.', 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+        
+        function displaySearchResults(results) {
+            const container = document.getElementById('search-results');
+            
+            if (!results || results.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.6;">No results found. Try a different search term.</div>';
+                return;
+            }
+            
+            const resultsHtml = results.map(track => `
+                <div class="search-result-item">
+                    <img src="${track.coverUrl || '/placeholder-cover.jpg'}" 
+                         alt="Album Cover" class="search-result-cover" 
+                         onerror="this.src='/placeholder-cover.jpg'">
+                    <div class="search-result-info">
+                        <div class="search-result-title">${escapeHtml(track.title)}</div>
+                        <div class="search-result-artist">by ${escapeHtml(track.artist)}</div>
+                        <div class="search-result-album">from ${escapeHtml(track.album)}</div>
+                    </div>
+                    <div class="search-result-actions">
+                        ${track.previewUrl ? `
+                            <button class="preview-btn" onclick="playPreview('${track.previewUrl}')">
+                                <i class="fas fa-play"></i> Preview
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = resultsHtml;
+        }
+        
+        function playPreview(url) {
+            // Create audio element and play preview
+            const audio = new Audio(url);
+            audio.play().catch(error => {
+                showAlert('Could not play preview: ' + error.message, 'error');
+            });
+        }
+        
+        async function loadCacheStats() {
+            try {
+                const response = await fetch('/api/audio/search/external/cache/stats', {
+                    credentials: 'include'
+                });
+                const stats = await response.json();
+                
+                const container = document.getElementById('cache-stats');
+                container.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Cache Size: <strong>${stats.cacheSize}</strong> queries</span>
+                        <span>Cached: ${stats.cachedQueries.join(', ') || 'None'}</span>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load cache stats:', error);
+            }
+        }
+        
+        async function clearCache() {
+            try {
+                const response = await fetch('/api/audio/search/external/cache', { 
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    showAlert('Cache cleared successfully!', 'success');
+                    loadCacheStats();
+                    document.getElementById('search-results').innerHTML = '';
+                } else {
+                    showAlert('Failed to clear cache', 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to clear cache', 'error');
+            }
+        }
+        
+        // Week 10 Features - Rating System
+        async function rateTrack(trackId, rating) {
+            // Handle demo tracks
+            if (trackId.startsWith('demo')) {
+                showAlert(`Demo: Rated track ${rating} stars! (This is a demo - no real track exists)`, 'success');
+                updateDemoRating(trackId, rating);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/audio/${trackId}/rate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: getCurrentUserId(),
+                        rating: rating
+                    }),
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    showAlert(`Rated track ${rating} stars!`, 'success');
+                    loadTrackRatings(trackId);
+                } else {
+                    const error = await response.json();
+                    showAlert(error.message || 'Failed to rate track', 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to rate track', 'error');
+            }
+        }
+        
+        // Demo rating function
+        function updateDemoRating(trackId, rating) {
+            const ratingDisplay = document.getElementById(`rating-${trackId}`);
+            if (ratingDisplay) {
+                ratingDisplay.innerHTML = `
+                    <span class="rating-value">${rating}.0</span>
+                    <span class="rating-count">(1 rating)</span>
+                `;
+            }
+            
+            // Update star visual state
+            const stars = document.querySelectorAll(`[data-track-id="${trackId}"] .star`);
+            stars.forEach((star, index) => {
+                star.classList.toggle('active', index < rating);
+            });
+        }
+        
+        async function loadTrackRatings(trackId) {
+            try {
+                const response = await fetch(`/api/audio/${trackId}/ratings`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                const ratingDisplay = document.getElementById(`rating-${trackId}`);
+                if (ratingDisplay) {
+                    const avgRating = data.averageRating ? data.averageRating.toFixed(1) : '--';
+                    const count = data.ratingCount || 0;
+                    ratingDisplay.innerHTML = `
+                        <span class="rating-value">${avgRating}</span>
+                        <span class="rating-count">(${count} ratings)</span>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load track ratings:', error);
+            }
+        }
+        
+        // Week 10 Features - Favourite System
+        async function toggleFavourite(trackId) {
+            // Handle demo tracks
+            if (trackId.startsWith('demo')) {
+                const btn = document.querySelector(`[data-track-id="${trackId}"].favourite-btn`);
+                const isCurrentlyFavourited = btn.classList.contains('favourited');
+                const newState = !isCurrentlyFavourited;
+                
+                btn.className = `favourite-btn ${newState ? 'favourited' : 'not-favourited'}`;
+                
+                const favouriteDisplay = document.getElementById(`favourite-${trackId}`);
+                if (favouriteDisplay) {
+                    favouriteDisplay.textContent = `${newState ? 1 : 0} favourites`;
+                }
+                
+                showAlert(`Demo: ${newState ? 'Added to favourites!' : 'Removed from favourites!'} (This is a demo)`, 'success');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/audio/${trackId}/favorite`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: getCurrentUserId()
+                    }),
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const isFavourited = data.isFavourited;
+                    
+                    const btn = document.querySelector(`[data-track-id="${trackId}"].favourite-btn`);
+                    if (btn) {
+                        btn.className = `favourite-btn ${isFavourited ? 'favourited' : 'not-favourited'}`;
+                    }
+                    
+                    showAlert(isFavourited ? 'Added to favourites!' : 'Removed from favourites!', 'success');
+                    loadTrackFavourites(trackId);
+                    
+                    // Refresh favorite tracks list if a track was removed from favorites
+                    if (!isFavourited) {
+                        loadFavoriteTracks();
+                    }
+                } else {
+                    const error = await response.json();
+                    showAlert(error.message || 'Failed to toggle favourite', 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to toggle favourite', 'error');
+            }
+        }
+        
+        async function deleteTrack(trackId, trackTitle) {
+            // Show confirmation dialog
+            const confirmed = confirm(`Are you sure you want to delete "${trackTitle}"?\n\nThis action cannot be undone.`);
+            if (!confirmed) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/audio/tracks/${trackId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    showAlert(`Track "${trackTitle}" deleted successfully!`, 'success');
+                    
+                    // Remove the track from the UI
+                    const trackElement = document.querySelector(`[data-track-id="${trackId}"]`).closest('.track-item');
+                    if (trackElement) {
+                        trackElement.remove();
+                    }
+                    
+                    // Refresh the track lists
+                    loadTracks();
+                    loadFavoriteTracks();
+                } else {
+                    const error = await response.json();
+                    showAlert(error.message || 'Failed to delete track', 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to delete track', 'error');
+            }
+        }
+        
+        async function loadTrackFavourites(trackId) {
+            try {
+                const response = await fetch(`/api/audio/${trackId}/favourites`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                const favouriteDisplay = document.getElementById(`favourite-${trackId}`);
+                if (favouriteDisplay) {
+                    const count = data.favouriteCount || 0;
+                    favouriteDisplay.textContent = `${count} favourites`;
+                }
+            } catch (error) {
+                console.error('Failed to load track favourites:', error);
+            }
+        }
+        
+        // User Management
+        function getCurrentUserId() {
+            // For demo purposes, return user ID 1
+            // In a real app, this would come from the authentication context
+            return 1;
+        }
+        
+        // Setup star rating event listeners
+        function setupStarRatings() {
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('star')) {
+                    const trackId = e.target.closest('.star-rating').dataset.trackId;
+                    const rating = parseInt(e.target.dataset.rating);
+                    
+                    // Update visual state
+                    const stars = e.target.parentElement.querySelectorAll('.star');
+                    stars.forEach((star, index) => {
+                        star.classList.toggle('active', index < rating);
+                    });
+                    
+                    // Submit rating
+                    rateTrack(trackId, rating);
+                }
+            });
+        }
+        
+        // Initialize all Week 10 features
+        function initializeWeek10Features() {
+            setupStarRatings();
+            
+            // Load ratings and favourites for existing tracks when modal opens
+            const originalViewPlaylist = viewPlaylist;
+            viewPlaylist = async function(playlistId) {
+                await originalViewPlaylist(playlistId);
+                
+                // Load ratings and favourites for all tracks in the modal
+                const trackIds = Array.from(document.querySelectorAll('.star-rating')).map(el => el.dataset.trackId);
+                trackIds.forEach(trackId => {
+                    loadTrackRatings(trackId);
+                    loadTrackFavourites(trackId);
+                });
+            };
+        }
+        
+        // Share Modal Functions
+        function showShareModal() {
+            const modal = document.getElementById('share-modal');
+            modal.classList.add('show');
+        }
+        
+        function closeShareModal() {
+            const modal = document.getElementById('share-modal');
+            modal.classList.remove('show');
+        }
+        
+        function shareTrack() {
+            closeShareModal();
+            showAlert('Track sharing feature coming soon! Upload tracks first to share them.', 'success');
+        }
+        
+        function sharePlaylist() {
+            closeShareModal();
+            showAlert('Playlist sharing feature coming soon! Create playlists first to share them.', 'success');
+        }
+        
+        function shareRecommendation() {
+            closeShareModal();
+            showAlert('Music recommendation feature coming soon! Use the search functionality to find music to recommend.', 'success');
+        }
+    </script>
+</body>
+</html>
