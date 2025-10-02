@@ -4,20 +4,16 @@
 
 **Harmonia** is a full-stack web application that combines social messaging with music sharing. Users can chat in real-time, upload and stream audio files, create playlists, rate tracks, and integrate metadata from external sources like iTunes. Built with Spring Boot and designed for scalability, Harmonia provides a modern, responsive UI and robust backend architecture.
 
----
-
 ## ✨ Features
 
-- **Real-Time Chat**: WebSocket-powered instant messaging with persistent message history
-- **Audio Upload & Streaming**: Secure file upload with UUID-based storage and on-demand streaming
-- **Playlist Management**: Create, edit, and share playlists with track ordering and search functionality
-- **Multi-User Support**: Full authentication and authorization with user-specific content ownership
-- **Ratings & Favorites**: Rate tracks and mark favorites for personalized recommendations
-- **External Metadata Integration**: Fetch track information from iTunes API and other sources
-- **Interactive Music Cards**: Play shared tracks and expand playlists directly in the chat interface
-- **Responsive Design**: Modern, Spotify-inspired UI with glassmorphism effects and mobile support
-
----
+- **Real-Time Chat** - WebSocket-powered instant messaging with persistent message history
+- **Audio Upload & Streaming** - Secure file upload with UUID-based storage and on-demand streaming
+- **Playlist Management** - Create, edit, and share playlists with track ordering and search functionality
+- **Multi-User Support** - Full authentication and authorization with user-specific content ownership
+- **Ratings & Favorites** - Rate tracks and mark favorites for personalized recommendations
+- **External Metadata Integration** - Fetch track information from iTunes API and other sources
+- **Interactive Music Cards** - Play shared tracks and expand playlists directly in the chat interface
+- **Responsive Design** - Modern, Spotify-inspired UI with glassmorphism effects and mobile support
 
 ## 🏗️ Architecture & Stack
 
@@ -44,8 +40,6 @@
 - **Concurrency Tests**: Multi-user simulation tests
 - **Database Tests**: Testcontainers for PostgreSQL validation
 - **Security Tests**: Authentication and authorization coverage
-
----
 
 ## 🚀 Installation & Usage
 
@@ -98,8 +92,6 @@ mvn test -Dtest="PostgreSQLCompatibilityTest"                  # Database tests
 mvn surefire-report:report
 ```
 
----
-
 ## 📡 API Endpoints
 
 ### Chat
@@ -128,8 +120,6 @@ mvn surefire-report:report
 - `POST /api/favorites` - Add to favorites
 - `GET /api/favorites/user/{userId}` - Get user favorites
 
----
-
 ## 🧪 Testing
 
 Harmonia includes comprehensive test coverage:
@@ -142,8 +132,6 @@ Harmonia includes comprehensive test coverage:
 - **Concurrency**: Multi-user simulation (10+ simultaneous users)
 - **Database**: PostgreSQL compatibility via Testcontainers
 - **Performance**: Sub-200ms response times for API endpoints
-
----
 
 ## 🤝 Contributing
 
@@ -160,8 +148,6 @@ Contributions are welcome! Please follow these guidelines:
 - Write tests for new features
 - Update documentation as needed
 - Ensure all tests pass before submitting PR
-
----
 
 ## 📋 Project Structure
 
@@ -181,12 +167,10 @@ harmonia/
 │   │       └── templates/       # Thymeleaf views
 │   └── test/
 │       └── java/                # Test suites
-├── design/                      # Architecture diagrams
+├── docs/                        # Technical documentation
 ├── pom.xml                      # Maven configuration
 └── README.md
 ```
-
----
 
 ## 🔮 Roadmap
 
@@ -209,8 +193,6 @@ harmonia/
 - Redis caching for performance
 - API versioning and rate limiting
 - CI/CD pipeline
-
----
 
 ## 📄 License
 
@@ -240,8 +222,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
----
-
 ## 📞 Contact
 
 For questions, suggestions, or collaboration opportunities, please open an issue or reach out via GitHub.
@@ -249,6 +229,3 @@ For questions, suggestions, or collaboration opportunities, please open an issue
 ---
 
 **Built with ❤️ using Spring Boot, WebSockets, and modern web technologies.**
-
-#   H a r m o n i a  
- 
